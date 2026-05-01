@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 140 80" width="100%" height="100%">
+  <defs>
+    <!-- Gradiente de Verde LoopTech a Azul -->
+    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3dffa0" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    
+    <!-- Filtro de brillo intenso (Neon Glow) -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur1" />
+      <feGaussianBlur stdDeviation="6" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Línea gruesa (Efecto principal de luz de neón) -->
+  <path d="M 35,60 C 5,60 5,10 35,10 C 55,10 65,60 85,60 C 115,60 115,10 85,10 C 65,10 55,60 35,60 Z" 
+        fill="none" stroke="url(#neonGradient)" stroke-width="6" filter="url(#glow)"/>
+        
+  <!-- Línea fina interna (Simulando la pista técnica del circuito) -->
+  <path d="M 35,48 C 17,48 17,22 35,22 C 51,22 69,48 85,48 C 103,48 103,22 85,22 C 69,22 51,48 35,48 Z" 
+        fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.9" filter="url(#glow)"/>
+</svg>

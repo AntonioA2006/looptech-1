@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoopTech — Marketplace Estudiantil</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-logo">LOOPTECH</div>
+  <div class="load-bar"><div class="load-fill"></div></div>
+  <div class="load-txt">INICIALIZANDO MARKETPLACE...</div>
+</div>
+
+<header>
+  <div class="logo">
+    <span class="logo-bracket">[</span>Loop<span class="logo-tech">Tech</span><span class="logo-bracket">]</span>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Buscar artículos, categorías..." oninput="renderItems()">
+  </div>
+<div class="header-right">
+  <div class="live-badge" style="cursor:pointer;" onclick="toggleChatMovil()">
+    <div class="live-dot"></div>
+    <span id="onlineN">0</span> en línea
+  </div>
+    <button class="btn btn-outline" id="loginBtn" onclick="openModal('authM')">Entrar</button>
+    <button class="btn btn-primary" id="pubBtn" style="display:none" onclick="checkAuthPublish()">+ Publicar</button>
+    <div class="avatar" id="ava" style="display:none" onclick="toggleDrop()">?</div>
+  </div>
+</header>
+
+<div class="pdrop" id="pdrop">
+  <div class="pd-user">
+    <div class="pd-uname" id="pdName">—</div>
+    <div class="pd-email" id="pdEmail">—</div>
+  </div>
+  <div class="pd-div"></div>
+  <div class="pd-item" onclick="myItems()"> Mis artículos</div>
+  <div class="pd-item" onclick="openModal('pubM')"> + Publicar artículo</div>
+  <div class="pd-div"></div>
+  <div class="pd-item red" onclick="logout()">⏻ Cerrar sesión</div>
+</div>
+
+<div class="page">
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Explorar</div>
+      <div class="sb-item active" id="sb-all" onclick="setType('all',this)">
+        <span class="ic">⊞</span> Todos <span class="sb-cnt" id="cnt-all">0</span>
+      </div>
+      <div class="sb-item" id="sb-swap" onclick="setType('swap',this)">
+        <span class="ic">⇄</span> Intercambio <span class="sb-cnt" id="cnt-swap">0</span>
+      </div>
+      <div class="sb-item" id="sb-sale" onclick="setType('sale',this)">
+        <span class="ic">$</span> Venta <span class="sb-cnt" id="cnt-sale">0</span>
+      </div>
+      <div class="sb-item" id="sb-donate" onclick="setType('donate',this)">
+        <span class="ic">♡</span> Donación <span class="sb-cnt" id="cnt-donate">0</span>
+      </div>
+      <div class="sb-item" id="sb-msgs" onclick="showInbox(this)">
+  <span class="ic">✉</span> Mensajes <span class="sb-cnt" id="cnt-msgs">0</span>
+</div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">
+      <div class="sb-label">Categorías</div>
+      <div class="sb-item" onclick="setCat('Microcontroladores',this)"><div class="cat-dot" style="background:#3dffa0"></div>Microcontroladores</div>
+      <div class="sb-item" onclick="setCat('Laptops',this)"><div class="cat-dot" style="background:#38bdf8"></div>Laptops</div>
+      <div class="sb-item" onclick="setCat('Componentes PC',this)"><div class="cat-dot" style="background:#f97316"></div>Componentes PC</div>
+      <div class="sb-item" onclick="setCat('Sensores',this)"><div class="cat-dot" style="background:#a78bfa"></div>Sensores</div>
+      <div class="sb-item" onclick="setCat('Móviles',this)"><div class="cat-dot" style="background:#fbbf24"></div>Móviles</div>
+      <div class="sb-item" onclick="setCat('Cables / Accesorios',this)"><div class="cat-dot" style="background:#f472b6"></div>Cables / Accesorios</div>
+      <div class="sb-item" onclick="setCat(null,this)"><div class="cat-dot" style="background:var(--text3)"></div>Todas las categorías</div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="stats">
+      <div class="stat"><div class="stat-val g" id="sItems">0</div><div class="stat-lbl">Artículos activos</div></div>
+      <div class="stat"><div class="stat-val b" id="sUsers">0</div><div class="stat-lbl">Miembros</div></div>
+      <div class="stat"><div class="stat-val o" id="sSwaps">0</div><div class="stat-lbl">Intercambios</div></div>
+      <div class="stat"><div class="stat-val p" id="sMsgs">0</div><div class="stat-lbl">Mensajes hoy</div></div>
+    </div>
+
+    <div class="filters">
+      <button class="chip on" onclick="setCond('all',this)">Todos</button>
+      <button class="chip" onclick="setCond('Nuevo',this)">Nuevo</button>
+      <button class="chip" onclick="setCond('Buen estado',this)">Buen estado</button>
+      <button class="chip" onclick="setCond('Regular',this)">Regular</button>
+      <select class="sort-sel" onchange="setSort(this.value)">
+        <option value="recent">Más recientes</option>
+        <option value="asc">Precio: menor → mayor</option>
+        <option value="desc">Precio: mayor → menor</option>
+      </select>
+    </div>
+
+    <div class="grid" id="grid">
+      <div class="empty"><div class="e-ico">⟳</div><p>Conectando con Firebase...</p></div>
+    </div>
+  </main>
+
+  <aside class="chat">
+    <div class="chat-hd">
+      <button onclick="cerrarChatMovil()" class="chat-close">✕</button>
+      <div class="chat-hd-title" id="chatTitle">// CHAT GLOBAL</div>
+      <button id="backToGlobal" onclick="switchChat('global', 'CHAT GLOBAL')" style="display:none; background:none; border:none; color:var(--accent2); cursor:pointer; font-size:0.6rem;">[VOLVER AL GLOBAL]</button>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="chat-in">
+      <input type="text" id="msgIn" placeholder="Escribe..." onkeydown="if(event.key==='Enter')sendMsg()" maxlength="200">
+      <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+  </aside>
+
+  <button class="chat-toggle" onclick="toggleChatMovil()">💬</button>
+</div>
+
+<div class="overlay" id="authM" onclick="closeBg(event,'authM')">
+  <div class="modal">
+    <div class="modal-title">// ACCESO A LOOPTECH</div>
+    <button class="x-btn" onclick="closeModal('authM')">×</button>
+    <div class="tabs">
+      <div class="tab on" onclick="swTab('login')">Iniciar sesión</div>
+      <div class="tab" onclick="swTab('reg')">Registrarse</div>
+    </div>
+    <div class="tab-pane on" id="tp-login">
+      <div class="fg"><label class="fl">Correo institucional</label><input class="fi" type="email" id="lEmail"></div>
+      <div class="fg"><label class="fl">Contraseña</label><input class="fi" type="password" id="lPass" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary fw" onclick="doLogin()">Entrar al marketplace →</button>
+    </div>
+    <div class="tab-pane" id="tp-reg">
+      <div class="row2">
+        <div class="fg"><label class="fl">Nombre</label><input class="fi" type="text" id="rName"></div>
+        <div class="fg"><label class="fl">Apellido</label><input class="fi" type="text" id="rLast"></div>
+      </div>
+      <div class="fg"><label class="fl">Correo institucional</label><input class="fi" type="email" id="rEmail"></div>
+      <div class="fg">
+        <label class="fl">Carrera</label>
+        <select class="fs" id="rCareer"><option value="">Selecciona tu carrera</option><option>Ingeniería en Sistemas</option><option>Ingeniería Electrónica</option><option>Otra carrera</option></select>
+      </div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Contraseña</label><input class="fi" type="password" id="rPass"></div>
+        <div class="fg"><label class="fl">Confirmar</label><input class="fi" type="password" id="rPass2"></div>
+      </div>
+      <button class="btn btn-primary fw" onclick="doRegister()">Crear cuenta →</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="pubM" onclick="closeBg(event,'pubM')">
+  <div class="modal">
+    <div class="modal-title">// PUBLICAR ARTÍCULO</div>
+    <button class="x-btn" onclick="closeModal('pubM')">×</button>
+    <div class="fg"><label class="fl">Ícono</label><div class="epick" id="epick"></div></div>
+    <div class="fg"><label class="fl">Título</label><input class="fi" type="text" id="pTitle" maxlength="80"></div>
+    <div class="fg"><label class="fl">Descripción</label><textarea class="fi fta" id="pDesc" rows="3"></textarea></div>
+    <div class="row2">
+      <div class="fg"><label class="fl">Categoría</label><select class="fs" id="pCat"><option value="">Seleccionar</option><option>Microcontroladores</option><option>Laptops</option><option>Componentes PC</option><option>Sensores</option><option>Móviles</option><option>Cables / Accesorios</option><option>Otro</option></select></div>
+      <div class="fg"><label class="fl">Condición</label><select class="fs" id="pCond"><option value="">Seleccionar</option><option>Nuevo</option><option>Buen estado</option><option>Regular</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label class="fl">Tipo de oferta</label><select class="fs" id="pType"><option value="">Seleccionar</option><option value="swap">⇄ Intercambio</option><option value="sale">$ Venta</option><option value="donate">♡ Donación</option></select></div>
+      <div class="fg"><label class="fl">Precio (MXN)</label><input class="fi" type="number" id="pPrice" value="0" min="0"></div>
+    </div>
+    <div class="fg">
+      <label class="fl">Punto de entrega en el ITM</label>
+      <select class="fs" id="pLocation">
+        <option value="A convenir">A convenir en el chat</option>
+        <option value="Cafetería Central">Cafetería Central</option>
+        <option value="Edificio A">Edificio A</option>
+        <option value="Edificio L">Edificio L</option>
+        <option value="Edificio AG">Edificio AG</option>
+        <option value="Biblioteca">Biblioteca</option>
+        <option value="Auditorio">Auditorio</option>
+      </select>
+    </div>
+    <button class="btn btn-primary fw" onclick="doPublish()">Publicar en tiempo real →</button>
+  </div>
+</div>
+
+<div class="overlay" id="detM" onclick="closeBg(event,'detM')">
+  <div class="modal" id="detContent"></div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -333,6 +333,8 @@ function renderItems() {
     grid.innerHTML = `<div class="empty"><div class="e-ico">◎</div><p>No hay artículos con estos filtros</p></div>`;
     return;
   }
+  //Pullrequest Test
+  //This request done and work
 
   grid.innerHTML = items.map(item => {
     const condCls = item.condition === 'Nuevo' ? 'cn' : item.condition === 'Buen estado' ? 'cb' : 'cr';

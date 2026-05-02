@@ -449,7 +449,11 @@ function resetGridLayout() {
   if(grid) grid.className = 'grid';
 }
 
-// Filtro de palabras y helpers
+
+
+
+
+//aknkna// Filtro de palabras y helpers
 const palabrasProhibidas = [
   'puto', 'puta', 'pendejo', 'pendeja', 'mierda', 'cabrón', 'cabrona',
   'chinga', 'chingada', 'pinche', 'verga', 'pito', 'culero', 'culera',
